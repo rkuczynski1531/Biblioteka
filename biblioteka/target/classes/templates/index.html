@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteka</title>
+    <link rel="stylesheet" th:href="@{/css.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/register">Rejestracja</a>
+            </li>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/login">Zaloguj się</a>
+            </li>
+            <li  sec:authorize="hasAuthority('ROLE_USER')">
+                <a href="/logout">Wyloguj się</a>
+            </li>
+            <li>
+                <a href="/booksList">Lista książek</a>
+            </li>
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a href="/addBook">dodaj Książkę</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Książka</title>
+<!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
+    <link rel="stylesheet" th:href="@{/css.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/register">Rejestracja</a>
+            </li>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/login">Zaloguj się</a>
+            </li>
+            <li  sec:authorize="hasAuthority('ROLE_USER')">
+                <a href="/logout">Wyloguj się</a>
+            </li>
+            <li>
+                <a href="/booksList">Lista książek</a>
+            </li>
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a href="/addBook">dodaj Książkę</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<article>
+    <section>
+        <h1 th:text="${book.title}"></h1>
+        <div>
+            <div class="foto">
+                <img width="400" th:src="${book.photosImagePath}">
+            </div>
+            <div>
+                <h2 th:text="${book.description}"></h2>
+            </div>
+            <form sec:authorize="hasAuthority('ROLE_ADMIN')" th:action="@{/deleteBook/{id}(id=${book.id})}" th:object="${book}" method="post">
+                <input type="submit" value="Usuń"/>
+            </form>
+        </div>
+    </section>
+</article>
+</body>
+</html>

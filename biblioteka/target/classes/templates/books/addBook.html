@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodaj książkę</title>
+<!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
+<!--    <link rel="stylesheet" href="https://igoradamenko.github.io/awsm.css/css/awsm.min.css">-->
+    <link rel="stylesheet" th:href="@{/css.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/register">Rejestracja</a>
+            </li>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/login">Zaloguj się</a>
+            </li>
+            <li  sec:authorize="hasAuthority('ROLE_USER')">
+                <a href="/logout">Wyloguj się</a>
+            </li>
+            <li>
+                <a href="/booksList">Lista książek</a>
+            </li>
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a href="/addBook">dodaj Książkę</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<article>
+    <fieldset>
+        <legend>Nowa książka</legend>
+        <form method="post" th:action="@{/addBook}" th:object="${book}" enctype="multipart/form-data">
+            <label>Tytuł
+                <input type="text" required th:field="*{title}"/>
+            </label>
+            <fieldset th:each="author,authorStat : *{authors}">
+                <legend th:text="|Autor ${authorStat.index + 1}|"></legend>
+                    <input type="text" th:field="*{authors[__${authorStat.index}__].name}"/>
+            </fieldset>
+            <div>
+                <button type="submit" name="addAuthor">+</button>
+            </div>
+            <label>Opis
+                <input type="text" required th:field="*{description}">
+            </label>
+            <label>Kategoria
+                <select id="categories" required th:field="*{category}">
+                    <option value="biografia">Biografia</option>
+                    <option value="dla dzieci">Dla dzieci</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="historia">Historia</option>
+                    <option value="horror">Horror</option>
+                    <option value="informatyka">Informatyka</option>
+                    <option value="komiks">Komiks</option>
+                    <option value="kryminał, sensacja, thriller">Kryminał, sensacja, thriller</option>
+                    <option value="kuchnia">Kuchnia</option>
+                    <option value="literatura faktu">Literatura faktu</option>
+                    <option value="obyczajowa">Obyczajowa</option>
+                    <option value="poezja, aforyzm, dramat">Poezja, aforyzm, dramat</option>
+                    <option value="poradniki">Poradniki</option>
+                    <option value="sciencie fiction">Sciencie fiction</option>
+                    <option value="sport">Sport</option>
+                    <option value="turysytka">Turysytka</option>
+                </select>
+            </label>
+            <label>Liczba stron
+                <input type="number" required min="1" max="255" th:field="*{numOfPages}">
+            </label>
+            <label>Zdjęcie
+                <input type="file" name="image" required accept="image/png, image/jpeg">
+            </label>
+            <p>
+                <button type="submit">Dodaj</button>
+                <button type="reset">Wyczyść</button>
+            </p>
+        </form>
+    </fieldset>
+</article>
+</body>
+</html>

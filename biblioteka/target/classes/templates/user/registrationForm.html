@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja</title>
+<!--    <link rel="stylesheet" href="https://igoradamenko.github.io/awsm.css/css/awsm.min.css">-->
+<!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
+    <link rel="stylesheet" th:href="@{/css.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/register">Rejestracja</a>
+            </li>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/login">Zaloguj się</a>
+            </li>
+            <li  sec:authorize="hasAuthority('ROLE_USER')">
+                <a href="/logout">Wyloguj się</a>
+            </li>
+            <li>
+                <a href="/booksList">Lista książek</a>
+            </li>
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a href="/addBook">dodaj Książkę</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<fieldset>
+    <legend>Zarejestruj się</legend>
+    <h1 th:if="${message != null}" th:text="${message}"></h1>
+    <form method="post" th:action="@{/processRegister}" th:object="${user}">
+        <p class="C(red)" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></p>
+        <label>Imię
+            <input type="text" th:field="*{firstName}" th:errorclass="'Bdc(red)'"/>
+        </label>
+        <p class="C(red)" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></p>
+        <label>Nazwisko
+            <input type="text" th:field="*{lastName}" th:errorclass="'Bdc(red)'">
+        </label>
+        <p class="C(red)" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+        <label>Hasło
+            <input type="password" th:field="*{password}" th:errorclass="'Bdc(red)'">
+        </label>
+        <p class="C(red)" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+        <label>Email
+            <input type="email" th:field="*{email}" th:errorclass="'Bdc(red)'">
+        </label>
+<!--        <p class="C(red)" th:if="${#fields.hasErrors('phoneNumber')}">fdgf</p>-->
+        <label>Numer telefonu
+            <input type="text" th:field="*{phoneNumber}" th:errorclass="'Bdc(red)'">
+        </label>
+        <p>
+            <button type="submit">Zarejestruj</button>
+        </p>
+    </form>
+</fieldset>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista książek</title>
+<!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
+    <link rel="stylesheet" th:href="@{/css.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/register">Rejestracja</a>
+            </li>
+            <li sec:authorize="!isAuthenticated()">
+                <a href="/login">Zaloguj się</a>
+            </li>
+            <li  sec:authorize="hasAuthority('ROLE_USER')">
+                <a href="/logout">Wyloguj się</a>
+            </li>
+            <li>
+                <a href="/booksList">Lista książek</a>
+            </li>
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a href="/addBook">dodaj Książkę</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<article>
+    <div>
+        <table>
+            <tr>
+                <th>Tytuł</th>
+                <th>Zdjęcie</th>
+                <th>Opis</th>
+                <th>Kategoria</th>
+                <th>Liczba stron</th>
+                <th sec:authorize="hasAuthority('ROLE_ADMIN')">Usuń</th>
+                <th sec:authorize="hasAuthority('ROLE_ADMIN')">Edytuj</th>
+            </tr>
+            <tr th:each="book : ${books}">
+                <td>
+                    <a th:href="@{'book/{id}'(id=${book.id})}" th:text="${book.title}"></a>
+                </td>
+                <td>
+                    <a th:href="@{'book/{id}'(id=${book.id})}">
+                        <img th:src="${book.photosImagePath}" width="100" height="180"/>
+                    </a>
+                </td>
+                <td th:text="${book.description}"></td>
+                <td th:text="${book.category}"></td>
+                <td th:text="${book.numOfPages}"></td>
+                <td sec:authorize="hasAuthority('ROLE_ADMIN')">
+                    <form th:action="@{/deleteBook/{id}(id=${book.id})}" th:object="${book}" method="post">
+                        <input type="submit" value="Usuń"/>
+                    </form>
+                </td>
+                <td sec:authorize="hasAuthority('ROLE_ADMIN')">
+                    <form th:action="@{/updateBook/{id}(id=${book.id})}" th:object="${book}" method="get">
+                        <input type="submit" value="Edytuj"/>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+</article>
+</body>
+</html>
