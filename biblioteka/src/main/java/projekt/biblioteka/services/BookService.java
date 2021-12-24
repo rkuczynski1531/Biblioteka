@@ -1,5 +1,9 @@
 package projekt.biblioteka.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import projekt.biblioteka.models.Book;
@@ -34,7 +38,7 @@ public class BookService {
     }
 
     public void saveBook(Book toSave, String fileName){
-        toSave.setImage(fileName);
+//        toSave.setImage(fileName);
         repository.save(toSave);
     }
 
@@ -42,9 +46,24 @@ public class BookService {
         repository.deleteBookById(id);
     }
 
-    public void saveImage(MultipartFile multipartFile, String fileName, int bookId) throws IOException {
-        String uploadDir = "book-images/" + bookId;
-
+//    public void saveImage(MultipartFile multipartFile, String fileName, int bookId) throws IOException {
+//        String uploadDir = "book-images/" + bookId;
+//
+//        Path uploadPath = Paths.get(uploadDir);
+//
+//        if (!Files.exists(uploadPath)) {
+//            Files.createDirectories(uploadPath);
+//        }
+//
+//        try (InputStream inputStream = multipartFile.getInputStream()) {
+//            Path filePath = uploadPath.resolve(fileName);
+//            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+//        } catch (IOException ioe) {
+//            throw new IOException("Could not save image file: " + fileName, ioe);
+//        }
+//    }
+    public void saveImage(String uploadDir, String fileName,
+                                MultipartFile multipartFile) throws IOException {
         Path uploadPath = Paths.get(uploadDir);
 
         if (!Files.exists(uploadPath)) {
@@ -57,5 +76,25 @@ public class BookService {
         } catch (IOException ioe) {
             throw new IOException("Could not save image file: " + fileName, ioe);
         }
+    }
+    public List<Book> findByKeyword(String keyword){
+        return repository.findBookByTitleContainingIgnoreCase(keyword);
+    }
+
+    public Page<Book> findPaginated(int pageNo, int pageSize, String sortField, String sortDir, String keyword, boolean onTheList){
+        Sort sort = Sort.by(sortField);
+        sort = sortDir.equals("asc") ? sort.ascending() : sort.descending();
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+        if (keyword != null){
+            return repository.findAllByOnTheListEquals(keyword, onTheList, pageable);
+        }
+        return this.repository.findAllByOnTheListEquals(pageable, onTheList);
+    }
+
+    public void deleteBookFromList(Book book){
+        book.setOnTheList(false);
+    }
+    public void deleteBookFromListById(int id){
+        this.getBook(id).setOnTheList(false);
     }
 }

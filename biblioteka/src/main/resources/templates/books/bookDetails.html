@@ -8,45 +8,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Książka</title>
 <!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
-    <link rel="stylesheet" th:href="@{/css.css}">
+<!--    <link rel="stylesheet" th:href="@{../../static/fontawesome-free-6.0.0-beta3-web/css/all.min.css}">-->
+<!--    <link rel="stylesheet" th:href="@{../../static/Rich-Text-Editor-jQuery-RichText/src/richtext.min.css}">-->
+<!--    <script th:src="@{../../static/Rich-Text-Editor-jQuery-RichText/src/jquery.richtext.min.js}"></script>-->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{../../static/css.css}">
 </head>
 <body>
-<header>
-    <nav>
-        <ul>
-            <li sec:authorize="!isAuthenticated()">
-                <a href="/register">Rejestracja</a>
+<header class="header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="nav-menu navbar-nav mr-auto">
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/register" data-item="Rejestracja">Rejestracja</a>
             </li>
-            <li sec:authorize="!isAuthenticated()">
-                <a href="/login">Zaloguj się</a>
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/login" data-item="Zaloguj się">Zaloguj się</a>
             </li>
-            <li  sec:authorize="hasAuthority('ROLE_USER')">
-                <a href="/logout">Wyloguj się</a>
+            <li  class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/logout" data-item="Wyloguj się">Wyloguj się</a>
             </li>
-            <li>
-                <a href="/booksList">Lista książek</a>
+            <li class="nav-li nav-link" >
+                <a class="nav-item" href="/booksList" data-item="Lista książek">Lista książek</a>
             </li>
-            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
-                <a href="/addBook">dodaj Książkę</a>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/addBook" data-item="Dodaj książkę">Dodaj Książkę</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/profile" data-item="Twój profil">Twój profil</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_MOD') and !hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/adminPanel/commentsList">Komentarze</a>
+            </li>
+            <li class="nav-li nav-link dropdown" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item dropdown-toggle" role="button" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Panel admina
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/adminPanel/usersList">Użytkownicy</a>
+                    <a class="dropdown-item" href="/adminPanel/commentsList" >Komentarze</a>
+                </div>
             </li>
         </ul>
+        <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
     </nav>
 </header>
-<article>
-    <section>
-        <h1 th:text="${book.title}"></h1>
-        <div>
-            <div class="foto">
-                <img width="400" th:src="${book.photosImagePath}">
+    <div class="container">
+        <div class="card">
+            <div class="container-fluid">
+                <div class="wrapper row">
+                    <div class="preview col-md-4">
+                        <div class="preview-pic tab-content">
+                            <div class="tab-pane active" id="pic-1"><img width="200" th:class="imgfluid" th:src="@{${book.getPhotosImagePath()}}" th:alt="${book.title}"/>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="details col-md-8">
+                        <div class="product-title" th:utext="${book.title}"></div>
+                        <div class="rating">
+                            <div class="stars float-left">
+                                <p class="vote">Ocena: <strong th:text="${book.rating}"></strong><strong th:text="' (' + ${book.numOfVotes} + ' głosów)'"></strong></p>
+                                <form sec:authorize="isAuthenticated()" method="post" th:action="@{/rateBook/{id}(id=${book.id})}">
+                                    <div dir="rtl" class="row">
+                                        <input type="radio" id="five" name="rate" value="5" checked="checked">
+                                        <label class="star" for="five"></label>
+                                        <input type="radio" id="four" name="rate" value="4">
+                                        <label class="star" for="four"></label>
+                                        <input type="radio" id="three" name="rate" value="3">
+                                        <label class="star" for="three"></label>
+                                        <input type="radio" id="two" name="rate" value="2">
+                                        <label class="star" for="two"></label>
+                                        <input type="radio" id="one" name="rate" value="1">
+                                        <label class="star" for="one"></label>
+                                    </div>
+                                        <!--                                    <span class="result"></span>-->
+                                        <div class="row">
+                                            <button class="btn btn-primary bookDetails left" type="submit">Oceń</button>
+                                        </div>
+
+<!--                                    </div>-->
+                                </form>
+                            </div>
+                        </div>
+                        <h4 class="price">ilość: <span th:text="${book.quantity}"></span></h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <form sec:authorize="isAuthenticated()" th:if="${book.quantity > 0}" th:action="@{/borrowBook/{id}(id=${book.id})}" th:object="${book}" method="post">
+                                    <!--                                <input type="submit" value="Wypożycz"/>-->
+                                    <button class="btn btn-primary bookDetailsBorrow " type="submit">Wypożycz</button>
+                                </form>
+                                <form  th:if="${book.quantity == 0 }" th:action="@{/reserveBook/{id}(id=${book.id})}" th:object="${book}" method="post">
+                                    <span class="pull-left reserveText" th:text="'Ludzi w kolejce: ' + ${book.getPeopleInQueue().size()}"></span>
+<!--                                    <div class="row">-->
+                                        <button class="btn btn-primary reserve bookDetails" type="submit">Zarezerwuj</button>
+<!--                                    </div>-->
+                                </form>
+                                <div class="row">
+                                    <div>
+                                        <form sec:authorize="hasAuthority('ROLE_ADMIN')" th:action="@{/addQuantity/{id}(id=${book.id})}" th:object="${book}" method="post">
+                                            <button class="btn btn-primary bookDetailss op" type="submit">+</button>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <form th:if="${book.quantity > 0}" sec:authorize="hasAuthority('ROLE_ADMIN')" th:action="@{/subtractQuantity/{id}(id=${book.id})}" th:object="${book}" method="post">
+                                            <button class="btn btn-primary bookDetails op" type="submit">-</button>
+                                        </form>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div>
-                <h2 th:text="${book.description}"></h2>
-            </div>
-            <form sec:authorize="hasAuthority('ROLE_ADMIN')" th:action="@{/deleteBook/{id}(id=${book.id})}" th:object="${book}" method="post">
-                <input type="submit" value="Usuń"/>
-            </form>
+                <div class="product-description description" th:utext="${book.description}"></div>
         </div>
-    </section>
-</article>
+    </div>
+    </div>
+
+<section class="content-item" id="comments">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+<!--                <form>-->
+
+<!--                <div>-->
+                    <fieldset sec:authorize="isAuthenticated()">
+<!--                        <div class="row">-->
+<!--                            <div class="form-group col-sm-8">-->
+                                <form method="post" th:action="@{/addComment/{bookId}(bookId=${book.id})}" th:object="${book}">
+                                    <h3 class="pull-left">Nowy komentarz</h3>
+                                    <textarea class="form-control" id="comment" name="comment" placeholder="Twój komentarz"></textarea>
+                                    <button type="submit" class="btn btn-primary pull-right">Skomentuj</button>
+                                </form>
+<!--                            </div>-->
+<!--                        </div>-->
+                    </fieldset>
+<!--                </div>-->
+
+<!--                </form>-->
+
+                <h3>Komentarze</h3>
+                <div th:object="${book}">
+                    <div th:each="comment : *{comments}">
+                        <div class="media" th:if="${comment.accepted}">
+                            <div class="media-body">
+                                <a class="media-heading" th:href="@{/profile/{id}(id=${comment.user.id})}" th:text="${comment.user.firstName}"></a>
+                                <p th:utext="${comment.text}"></p>
+                                <ul class="list-unstyled list-inline media-detail pull-left">
+                                    <li th:text="${#temporals.format(comment.date, 'dd-MM-yyyy HH:mm')}"><i class="fa fa-calendar"></i></li>
+                                    <!--                            <li><i class="fa fa-thumbs-up"></i>13</li>-->
+                                </ul>
+                                <form th:if="${comment.accepted && (user == comment.user || #authorization.expression('hasRole(''ROLE_ADMIN'')') || #authorization.expression('hasRole(''ROLE_MOD'')'))}" th:action="@{/deleteComment/{id}(id=${comment.id})}" method="post" th:object="${comment}">
+                                    <button class="btn btn-primary" type="submit">Usuń</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    const hamburger = document.querySelector(".hamburger");
+    const navMenu = document.querySelector(".nav-menu");
+
+    hamburger.addEventListener("click", mobileMenu);
+
+    function mobileMenu() {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+    }
+    const navLink = document.querySelectorAll(".nav-link");
+
+    navLink.forEach(n => n.addEventListener("click", closeMenu));
+    navLink.item(navLink.length - 1).removeEventListener("click", closeMenu);
+    function closeMenu() {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+    }
+</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>

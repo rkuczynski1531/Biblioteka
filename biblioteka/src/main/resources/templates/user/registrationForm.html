@@ -9,58 +9,133 @@
     <title>Rejestracja</title>
 <!--    <link rel="stylesheet" href="https://igoradamenko.github.io/awsm.css/css/awsm.min.css">-->
 <!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
-    <link rel="stylesheet" th:href="@{/css.css}">
+<!--    <link rel="stylesheet" th:href="@{../../static/fontawesome-free-6.0.0-beta3-web/css/all.min.css}">-->
+    <link rel="stylesheet" th:href="@{../../static/Rich-Text-Editor-jQuery-RichText/src/richtext.min.css}">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://codepen.io/skjha5993/pen/bXqWpR.css">
+    <link rel="stylesheet" th:href="@{../../static/css.css}">
+    <script th:src="@{../../static/Rich-Text-Editor-jQuery-RichText/src/jquery.richtext.min.js}"></script>
 </head>
 <body>
-<header>
-    <nav>
-        <ul>
-            <li sec:authorize="!isAuthenticated()">
-                <a href="/register">Rejestracja</a>
+<header class="header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="nav-menu navbar-nav mr-auto">
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/register" data-item="Rejestracja">Rejestracja</a>
             </li>
-            <li sec:authorize="!isAuthenticated()">
-                <a href="/login">Zaloguj się</a>
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/login" data-item="Zaloguj się">Zaloguj się</a>
             </li>
-            <li  sec:authorize="hasAuthority('ROLE_USER')">
-                <a href="/logout">Wyloguj się</a>
+            <li  class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/logout" data-item="Wyloguj się">Wyloguj się</a>
             </li>
-            <li>
-                <a href="/booksList">Lista książek</a>
+            <li class="nav-li nav-link" >
+                <a class="nav-item" href="/booksList" data-item="Lista książek">Lista książek</a>
             </li>
-            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
-                <a href="/addBook">dodaj Książkę</a>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/addBook" data-item="Dodaj książkę">Dodaj Książkę</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/profile" data-item="Twój profil">Twój profil</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_MOD') and !hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/adminPanel/commentsList">Komentarze</a>
+            </li>
+            <li class="nav-li nav-link dropdown" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item dropdown-toggle" role="button" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Panel admina
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/adminPanel/usersList">Użytkownicy</a>
+                    <a class="dropdown-item" href="/adminPanel/commentsList" >Komentarze</a>
+                </div>
             </li>
         </ul>
+        <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
     </nav>
 </header>
-<fieldset>
-    <legend>Zarejestruj się</legend>
-    <h1 th:if="${message != null}" th:text="${message}"></h1>
+<div class="container">
     <form method="post" th:action="@{/processRegister}" th:object="${user}">
-        <p class="C(red)" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></p>
-        <label>Imię
-            <input type="text" th:field="*{firstName}" th:errorclass="'Bdc(red)'"/>
-        </label>
-        <p class="C(red)" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></p>
-        <label>Nazwisko
-            <input type="text" th:field="*{lastName}" th:errorclass="'Bdc(red)'">
-        </label>
-        <p class="C(red)" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
-        <label>Hasło
-            <input type="password" th:field="*{password}" th:errorclass="'Bdc(red)'">
-        </label>
-        <p class="C(red)" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
-        <label>Email
-            <input type="email" th:field="*{email}" th:errorclass="'Bdc(red)'">
-        </label>
-<!--        <p class="C(red)" th:if="${#fields.hasErrors('phoneNumber')}">fdgf</p>-->
-        <label>Numer telefonu
-            <input type="text" th:field="*{phoneNumber}" th:errorclass="'Bdc(red)'">
-        </label>
-        <p>
-            <button type="submit">Zarejestruj</button>
-        </p>
+        <div class="row jumbotron">
+            <div class="col-sm-12" th:if="${#fields.hasAnyErrors()}">
+                <ul>
+                    <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                </ul>
+            </div>
+            <div class="col-sm-6 form-group">
+<!--                <p class="C(red)" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></p>-->
+                <label for="firstName">Imię</label>
+                    <input type="text" class="form-control" id="firstName" placeholder="Imię" th:field="*{firstName}" th:errorclass="'Bdc(red)'"/>
+            </div>
+<!--                <p class="C(red)" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></p>-->
+            <div class="col-sm-6 form-group">
+                <label for="lastName">Nazwisko</label>
+                    <input type="text" class="form-control" id="lastName" placeholder="Nazwisko" th:field="*{lastName}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-6 form-group">
+<!--                <p class="C(red)" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>-->
+                <label for="password">Hasło</label>
+                    <input type="password" class="form-control" id="password" placeholder="Hasło" th:field="*{password}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-6 form-group">
+<!--                <p class="C(red)" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>-->
+                <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="Email" th:field="*{email}" th:errorclass="'Bdc(red)'">
+            </div>
+                <!--        <p class="C(red)" th:if="${#fields.hasErrors('phoneNumber')}">fdgf</p>-->
+            <div class="col-sm-6 form-group">
+                <label for="phoneNumber">Numer telefonu</label>
+                    <input type="text" class="form-control" id="phoneNumber" placeholder="Numer telefonu" th:field="*{phoneNumber}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-6 form-group">
+                <label for="city">Miasto</label>
+                    <input type="text" class="form-control" id="city"  oninvalid="setCustomValidity('Miasto powinno zawierać same litery')" oninput="setCustomValidity('')" pattern="[^0-9@!#$%^&*()_,<.>/?=+\\{};:|\[\]]*" required placeholder="Miasto" th:field="*{address.city}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-6 form-group">
+                <label for="street">Ulica</label>
+                    <input type="text" class="form-control" id="street"  oninvalid="setCustomValidity('Ulica powinna zawierać same litery')" oninput="setCustomValidity('')" pattern="[^0-9@!#$%^&*()_,<.>/?=+\\{};:|\[\]]*" required placeholder="Ulica" th:field="*{address.street}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-6 form-group">
+                <label for="buildingNumber">Numer budynku</label>
+                    <input type="number" class="form-control" id="buildingNumber" oninvalid="setCustomValidity('Numer budynku musi być liczbą dodatnią')" oninput="setCustomValidity('')" min="1" required placeholder="Numer budynku" th:field="*{address.buildingNumber}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-6 form-group">
+                <label for="apartmentNumber">Numer mieszkania</label>
+                    <input type="number" class="form-control" id="apartmentNumber" oninvalid="setCustomValidity('Numer mieszkania musi być liczbą dodatnią')" oninput="setCustomValidity('')" min="1" placeholder="Numer mieszkania" th:field="*{address.apartmentNumber}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-6 form-group">
+                <label for="zipCode">Kod pocztowy</label>
+                    <input type="text" class="form-control" id="zipCode" required pattern="[0-9]{2}-[0-9]{3}" oninvalid="setCustomValidity('Kod pocztowy powinieni być w formacie 11-111')" oninput="setCustomValidity('')" placeholder="kod-pocztowy" th:field="*{address.zipCode}" th:errorclass="'Bdc(red)'">
+            </div>
+            <div class="col-sm-12 form-group mb-0">
+                <button class="btn btn-primary float-right">Zarejestruj</button>
+            </div>
+        </div>
     </form>
-</fieldset>
+            </div>
+<script>
+    const hamburger = document.querySelector(".hamburger");
+    const navMenu = document.querySelector(".nav-menu");
+
+    hamburger.addEventListener("click", mobileMenu);
+
+    function mobileMenu() {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+    }
+    const navLink = document.querySelectorAll(".nav-link");
+
+    navLink.forEach(n => n.addEventListener("click", closeMenu));
+    navLink.item(navLink.length - 1).removeEventListener("click", closeMenu);
+    function closeMenu() {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+    }
+</script>
 </body>
 </html>

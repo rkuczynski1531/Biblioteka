@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteka</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" th:href="@{../../static/Rich-Text-Editor-jQuery-RichText/src/richtext.min.css}">
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://codepen.io/skjha5993/pen/bXqWpR.css">
+    <link rel="stylesheet" type="text/css" th:href="@{../../static/css.css}">
+    <script th:src="@{../../static/Rich-Text-Editor-jQuery-RichText/src/jquery.richtext.min.js}"></script>
+
+</head>
+<body>
+<header class="header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="nav-menu navbar-nav mr-auto">
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/register" data-item="Rejestracja">Rejestracja</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/login" data-item="Zaloguj się">Zaloguj się</a>
+            </li>
+            <li  class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/logout" data-item="Wyloguj się">Wyloguj się</a>
+            </li>
+            <li class="nav-li nav-link" >
+                <a class="nav-item" href="/booksList" data-item="Lista książek">Lista książek</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/addBook" data-item="Dodaj książkę">Dodaj Książkę</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/profile" data-item="Twój profil">Twój profil</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_MOD') and !hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/adminPanel/commentsList">Komentarze</a>
+            </li>
+            <li class="nav-li nav-link dropdown" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item dropdown-toggle" role="button" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Panel admina
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/adminPanel/usersList">Użytkownicy</a>
+                    <a class="dropdown-item" href="/adminPanel/commentsList" >Komentarze</a>
+                </div>
+            </li>
+        </ul>
+        <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+    </nav>
+</header>
+<div class="container">
+    <div class="row jumbotron">
+        <div class="col">
+            <form th:action="@{/usersList/page/1}" method="get">
+                <input id="txtSearch" type="text" name="keyword" th:value="${keyword}">
+                <button class="btn btn-primary" type="submit">Szukaj</button>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Imię</th>
+                        <th>Nazwisko</th>
+                        <th>Email</th>
+                        <th colspan="3">Role</th>
+                    </tr>
+                    <tr th:each="user : ${users}">
+                        <td>
+                            <a th:href="@{'user/{id}'(id=${user.id})}" th:utext="${user.firstName}"></a>
+                        </td>
+                        <td>
+                            <a th:href="@{'user/{id}'(id=${user.id})}" th:utext="${user.lastName}"></a>
+                        </td>
+                        <td th:utext="${user.email}"></td>
+                        <td th:each="role : ${roles}">
+                            <p th:if="${role.name} == 'ROLE_USER'">Użytkownik</p>
+                            <p th:if="${role.name} == 'ROLE_ADMIN'">Admin</p>
+                            <p th:if="${role.name} == 'ROLE_MOD'">Moderator</p>
+                            <form th:method="post" th:action="@{/deleteRole/{userId}/{roleId}(userId=${user.id}, roleId=${role.id})}" th:if="${user.roles.contains(role)} == true">
+                                <button class="btn btn-primary">-</button>
+                            </form>
+                            <form th:method="post" th:action="@{/addRole/{userId}/{roleId}(userId=${user.id}, roleId=${role.id})}"  th:unless="${user.roles.contains(role)} == true">
+                                <button class="btn btn-primary">+</button>
+                            </form>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div th:if="${totalPages > 1}">
+                <div class="row col-sm-12">
+                    <div class="pages">
+                        <a th:if="${currentPage > 1}" th:href="@{'/usersList/page/1' + ${keyword != null ? '&keyword=' + keyword : ''}}">Pierwsza</a>
+                        <span th:unless="${currentPage > 1}">Pierwsza</span>
+                    </div>
+                    <div class="pages">
+                        <a th:if="${currentPage > 1}" th:href="@{'/usersList/page/' + ${currentPage - 1} + '?' + ${keyword != null ? '&keyword=' + keyword : ''}}">Poprzednia</a>
+                        <span th:unless="${currentPage > 1}">Poprzednia</span>
+                    </div>
+                    <div class="pages">
+                    <span th:each="i: ${#numbers.sequence(1, totalPages)}">
+                        <a th:if="${currentPage != i}" th:href="@{'/usersList/page/' + ${i} + '?'  + ${keyword != null ? '&keyword=' + keyword : ''}}">[[${i}]]</a>
+                        <span th:unless="${currentPage != i}">[[${i}]]</span>
+                    </span>
+                    </div>
+                    <div class="pages">
+                        <a th:if="${currentPage < totalPages}" th:href="@{'/usersList/page/' + ${currentPage + 1} + '?'  + ${keyword != null ? '&keyword=' + keyword : ''}}">Dalej</a>
+                        <span th:unless="${currentPage < totalPages}">Dalej</span>
+                    </div>
+                    <div class="pages">
+                        <a th:if="${currentPage < totalPages}" th:href="@{'/usersList/page/' + ${totalPages} + '?'  + ${keyword != null ? '&keyword=' + keyword : ''}}">Ostatnia</a>
+                        <span th:unless="${currentPage < totalPages}">Ostatnia</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const hamburger = document.querySelector(".hamburger");
+    const navMenu = document.querySelector(".nav-menu");
+
+    hamburger.addEventListener("click", mobileMenu);
+
+    function mobileMenu() {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+    }
+    const navLink = document.querySelectorAll(".nav-link");
+
+    navLink.forEach(n => n.addEventListener("click", closeMenu));
+    navLink.item(navLink.length - 1).removeEventListener("click", closeMenu);
+    function closeMenu() {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+    }
+</script>
+</body>
+</html>

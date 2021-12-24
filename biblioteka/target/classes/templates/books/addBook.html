@@ -7,81 +7,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dodaj książkę</title>
+<!--    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">-->
 <!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
 <!--    <link rel="stylesheet" href="https://igoradamenko.github.io/awsm.css/css/awsm.min.css">-->
-    <link rel="stylesheet" th:href="@{/css.css}">
+<!--    <<link th:rel="stylesheet" th:href="@{webjars/bootstrap/4.0.0-2/css/bootstrap.min.css} "/>-->
+<!--    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">-->
+<!--    <link rel="stylesheet" href="richtext.min.css" />-->
+<!--    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>-->
+<!--    <script src="jquery.richtext.js"></script>-->
+<!--    <script src="https://cdn.ckeditor.com/ckeditor5/31.0.0/classic/ckeditor.js"></script>-->
+<!--    <script src="https://cdn.ckeditor.com/ckeditor5/31.0.0/classic/translations/pl.js"></script>-->
+    <script src= "http://code.jquery.com/jquery-1.9.0.js"> </script>
+<!--&lt;!&ndash;    <script th:src="@{G:/biblioteka/src/main/resources/templates/books/app.js}"></script>&ndash;&gt;-->
+    <script src= "http://code.jquery.com/jquery-migrate-1.2.1.js"> </script>
+<!--    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">-->
+<!--    <link rel="stylesheet" th:href="@{../../static/fontawesome-free-6.0.0-beta3-web/css/all.min.css}">-->
+    <link rel="stylesheet" th:href="@{../../static/Rich-Text-Editor-jQuery-RichText/src/richtext.min.css}">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://codepen.io/skjha5993/pen/bXqWpR.css">
+    <link rel="stylesheet" th:href="@{../../static/css.css}">
+    <script th:src="@{../../static/Rich-Text-Editor-jQuery-RichText/src/jquery.richtext.min.js}"></script>
+    <!--    <script src="../assets/ckeditor5-build-classic/ckeditor.js" type="text/javascript"></script>-->
+<!--    <script src="../assets/ckeditor5-build-classic/ckeditor.js.map" type="application/json"></script>-->
+
 </head>
-<body>
-<header>
-    <nav>
-        <ul>
-            <li sec:authorize="!isAuthenticated()">
-                <a href="/register">Rejestracja</a>
+<body data-editor="ClassicEditor">
+<header class="header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="nav-menu navbar-nav mr-auto">
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/register" data-item="Rejestracja">Rejestracja</a>
             </li>
-            <li sec:authorize="!isAuthenticated()">
-                <a href="/login">Zaloguj się</a>
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/login" data-item="Zaloguj się">Zaloguj się</a>
             </li>
-            <li  sec:authorize="hasAuthority('ROLE_USER')">
-                <a href="/logout">Wyloguj się</a>
+            <li  class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/logout" data-item="Wyloguj się">Wyloguj się</a>
             </li>
-            <li>
-                <a href="/booksList">Lista książek</a>
+            <li class="nav-li nav-link" >
+                <a class="nav-item" href="/booksList" data-item="Lista książek">Lista książek</a>
             </li>
-            <li sec:authorize="hasAuthority('ROLE_ADMIN')">
-                <a href="/addBook">dodaj Książkę</a>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/addBook" data-item="Dodaj książkę">Dodaj Książkę</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/profile" data-item="Twój profil">Twój profil</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_MOD') and !hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/adminPanel/commentsList">Komentarze</a>
+            </li>
+            <li class="nav-li nav-link dropdown" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item dropdown-toggle" role="button" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Panel admina
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/adminPanel/usersList">Użytkownicy</a>
+                    <a class="dropdown-item" href="/adminPanel/commentsList" >Komentarze</a>
+                </div>
             </li>
         </ul>
+        <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
     </nav>
 </header>
-<article>
-    <fieldset>
-        <legend>Nowa książka</legend>
+<div class="container">
         <form method="post" th:action="@{/addBook}" th:object="${book}" enctype="multipart/form-data">
-            <label>Tytuł
-                <input type="text" required th:field="*{title}"/>
-            </label>
-            <fieldset th:each="author,authorStat : *{authors}">
-                <legend th:text="|Autor ${authorStat.index + 1}|"></legend>
-                    <input type="text" th:field="*{authors[__${authorStat.index}__].name}"/>
-            </fieldset>
-            <div>
-                <button type="submit" name="addAuthor">+</button>
+            <div class="row jumbotron">
+                <div class="col-sm-12" th:if="${#fields.hasAnyErrors()}">
+                    <ul>
+                        <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                    </ul>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label for="title">Tytuł</label>
+                    <textarea class="form-control" id="title" placeholder="Tytuł" required th:field="*{title}" th:errorclass="'Bdc(red)'"></textarea>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label for="description">Opis</label>
+                    <textarea class="form-control" placeholder="Opis" id="description" required th:errorclass="'Bdc(red)'" th:field="*{description}"></textarea>
+                </div>
+
+                <div class="col-sm-6 form-group">
+                    <label for="categories">Kategoria
+                        <select class="form-control" id="categories" th:field="*{category}">
+                            <option value="biografia">Biografia</option>
+                            <option value="dla dzieci">Dla dzieci</option>
+                            <option value="fantasy">Fantasy</option>
+                            <option value="historia">Historia</option>
+                            <option value="horror">Horror</option>
+                            <option value="informatyka">Informatyka</option>
+                            <option value="komiks">Komiks</option>
+                            <option value="kryminał, sensacja, thriller">Kryminał, sensacja, thriller</option>
+                            <option value="kuchnia">Kuchnia</option>
+                            <option value="literatura faktu">Literatura faktu</option>
+                            <option value="obyczajowa">Obyczajowa</option>
+                            <option value="poezja, aforyzm, dramat">Poezja, aforyzm, dramat</option>
+                            <option value="poradniki">Poradniki</option>
+                            <option value="sciencie fiction">Sciencie fiction</option>
+                            <option value="sport">Sport</option>
+                            <option value="turysytka">Turysytka</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label for="quantity">Ilość dostępnych egzemplarzy
+                        <input class="form-control" id="quantity" th:errorclass="'Bdc(red)'" type="number" th:field="*{quantity}">
+                    </label>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label for="pages">Liczba stron
+                        <input id="pages" class="form-control" min="1" th:errorclass="'Bdc(red)'" type="number" th:field="*{numOfPages}">
+                    </label>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label>Autorzy</label>
+                    <div>
+                        <button class="btn btn-primary float-left op" type="submit" name="addAuthor">+</button>
+                    </div>
+                    <div th:if="${book.authors.size} != 0">
+                        <button class="btn btn-primary float-left op1" type="submit" name="deleteAuthor">-</button>
+                    </div>
+                </div>
+                <div class="col-sm-6"></div>
+                <div class="col-sm-6 form-group">
+                    <div th:each="author,authorStat : *{authors}">
+                        <p th:text="|Autor ${authorStat.index + 1}|"></p>
+                        <input oninvalid="setCustomValidity('Wprowadzono niedozwolone znaki')" oninput="setCustomValidity('')" pattern="[^0-9@!#$%^&*()_,<.>/?=+\\{};:|\[\]]*" th:errorclass="'Bdc(red)'" type="text" th:field="*{authors[__${authorStat.index}__].name}"/>
+                    </div>
+                </div>
+                <div class="col-sm-6 form-group">
+                    <label for="image">Zdjęcie
+                        <input id="image" type="file" name="im" accept="image/png, image/jpeg">
+                    </label>
+                </div>
+                <div class="col-sm-12 form-group mb-0">
+                    <button class="btn btn-primary float-right" type="submit">Dodaj</button>
+                </div>
             </div>
-            <label>Opis
-                <input type="text" required th:field="*{description}">
-            </label>
-            <label>Kategoria
-                <select id="categories" required th:field="*{category}">
-                    <option value="biografia">Biografia</option>
-                    <option value="dla dzieci">Dla dzieci</option>
-                    <option value="fantasy">Fantasy</option>
-                    <option value="historia">Historia</option>
-                    <option value="horror">Horror</option>
-                    <option value="informatyka">Informatyka</option>
-                    <option value="komiks">Komiks</option>
-                    <option value="kryminał, sensacja, thriller">Kryminał, sensacja, thriller</option>
-                    <option value="kuchnia">Kuchnia</option>
-                    <option value="literatura faktu">Literatura faktu</option>
-                    <option value="obyczajowa">Obyczajowa</option>
-                    <option value="poezja, aforyzm, dramat">Poezja, aforyzm, dramat</option>
-                    <option value="poradniki">Poradniki</option>
-                    <option value="sciencie fiction">Sciencie fiction</option>
-                    <option value="sport">Sport</option>
-                    <option value="turysytka">Turysytka</option>
-                </select>
-            </label>
-            <label>Liczba stron
-                <input type="number" required min="1" max="255" th:field="*{numOfPages}">
-            </label>
-            <label>Zdjęcie
-                <input type="file" name="image" required accept="image/png, image/jpeg">
-            </label>
-            <p>
-                <button type="submit">Dodaj</button>
-                <button type="reset">Wyczyść</button>
-            </p>
         </form>
-    </fieldset>
-</article>
+</div>
+<script>
+    $(document).ready(function(){
+        $('#description').richText({
+            imageUpload:false,
+            fileUpload:false,
+            videoEmbed:false,
+            code:false
+        });
+        $('#title').richText({
+            imageUpload:false,
+            fileUpload:false,
+            videoEmbed:false,
+            code:false
+        });
+    })
+
+</script>
+<script>
+    const hamburger = document.querySelector(".hamburger");
+    const navMenu = document.querySelector(".nav-menu");
+
+    hamburger.addEventListener("click", mobileMenu);
+
+    function mobileMenu() {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+    }
+    const navLink = document.querySelectorAll(".nav-link");
+
+    navLink.forEach(n => n.addEventListener("click", closeMenu));
+
+    navLink.item(navLink.length - 1).removeEventListener("click", closeMenu);
+
+    function closeMenu() {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+    }
+</script>
+<!--<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>-->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>-->
+<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>-->
 </body>
 </html>

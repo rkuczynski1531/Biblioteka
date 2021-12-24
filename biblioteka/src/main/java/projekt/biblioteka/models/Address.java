@@ -2,6 +2,7 @@ package projekt.biblioteka.models;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "addresses")
@@ -15,8 +16,10 @@ public class Address {
     private String street;
     @NotBlank(message = "Numer budynku nie może być pusty")
     private String buildingNumber;
+
     private String apartmentNumber;
     @NotBlank(message = "Kod pocztowy nie może być pusty")
+    @Pattern(regexp = "[0-9]{2}-[0-9]{3}", message = "Kod pocztowy powinien być w formacie 11-111")
     private String zipCode;
     @OneToOne(mappedBy = "address")
     private User user;
