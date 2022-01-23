@@ -75,7 +75,7 @@
     </nav>
 </header>
 <div class="container">
-        <form method="post" th:action="@{/addBook}" th:object="${book}" enctype="multipart/form-data">
+        <form method="post" id="myForm" th:action="@{/addBook}" th:object="${book}" enctype="multipart/form-data">
             <div class="row jumbotron">
                 <div class="col-sm-12" th:if="${#fields.hasAnyErrors()}">
                     <ul>
@@ -91,28 +91,12 @@
                     <textarea class="form-control" placeholder="Opis" id="description" required th:errorclass="'Bdc(red)'" th:field="*{description}"></textarea>
                 </div>
 
-                <div class="col-sm-6 form-group">
-                    <label for="categories">Kategoria
-                        <select class="form-control" id="categories" th:field="*{category}">
-                            <option value="biografia">Biografia</option>
-                            <option value="dla dzieci">Dla dzieci</option>
-                            <option value="fantasy">Fantasy</option>
-                            <option value="historia">Historia</option>
-                            <option value="horror">Horror</option>
-                            <option value="informatyka">Informatyka</option>
-                            <option value="komiks">Komiks</option>
-                            <option value="kryminał, sensacja, thriller">Kryminał, sensacja, thriller</option>
-                            <option value="kuchnia">Kuchnia</option>
-                            <option value="literatura faktu">Literatura faktu</option>
-                            <option value="obyczajowa">Obyczajowa</option>
-                            <option value="poezja, aforyzm, dramat">Poezja, aforyzm, dramat</option>
-                            <option value="poradniki">Poradniki</option>
-                            <option value="sciencie fiction">Sciencie fiction</option>
-                            <option value="sport">Sport</option>
-                            <option value="turysytka">Turysytka</option>
-                        </select>
-                    </label>
-                </div>
+<!--                <div class="col-sm-6 form-group">-->
+<!--                    <div th:each="author,authorStat : *{authors}">-->
+<!--                        <p th:text="|Autor ${authorStat.index + 1}|"></p>-->
+<!--                        <input oninvalid="setCustomValidity('Wprowadzono niedozwolone znaki')" oninput="setCustomValidity('')" pattern="[^0-9@!#$%^&*()_,<.>/?=+\\{};:|\[\]]*" th:errorclass="'Bdc(red)'" type="text" th:field="*{authors[__${authorStat.index}__].name}"/>-->
+<!--                    </div>-->
+<!--                </div>-->
                 <div class="col-sm-6 form-group">
                     <label for="quantity">Ilość dostępnych egzemplarzy
                         <input class="form-control" id="quantity" th:errorclass="'Bdc(red)'" type="number" th:field="*{quantity}">
@@ -123,20 +107,51 @@
                         <input id="pages" class="form-control" min="1" th:errorclass="'Bdc(red)'" type="number" th:field="*{numOfPages}">
                     </label>
                 </div>
+                <div class="col-sm-6 form-group" id="t">
+                    <label>Kategorie</label>
+                    <div  th:each="category,categoryStat : *{categories}">
+                        <p th:text="|Kategoria ${categoryStat.index + 1}|"></p>
+                        <!--                 th:field="*{categories[__${categoryStat.index}__].name}" -->
+                        <select class="form-control" th:id="${'categories'+__${categoryStat.index}__+'.name'}" th:name="${'categories['+__${categoryStat.index}__+'].name'}" hidden="hidden">
+                            <option value="as">a</option>
+                        </select>
+                        <select class="form-control" th:id="${'category'+__${categoryStat.index}__}" name="cat[]" onchange="this.form.submit()">
+
+                            <option th:value="${categoryy.name}" th:each="categoryy : ${categoriess}" th:selected="(${categoryy.name}  == ${category.name})">[[${categoryy.name}]]</option>
+                        </select>
+                        <p th:if="${category.childCategories.size > 0}" th:text="|Podkategoria ${categoryStat.index + 1}|"></p>
+                        <select class="form-control" id="tt" name="subCat[]" th:if="${category.childCategories.size > 0}">
+                            <option th:value="${categoryyy.name}" th:each="categoryyy : ${category.childCategories}">[[${categoryyy.name}]]</option>
+                        </select>
+                    </div>
+                        <div>
+                            <button class="btn btn-primary float-left op" type="submit" name="addCategory">+</button>
+                        </div>
+                        <div th:if="${book.categories.size} != 0">
+                            <button class="btn btn-primary float-left op1" type="submit" name="deleteCategory">-</button>
+                        </div>
+<!--                    <form method="get" th:action="@{/addNewCategory}">-->
+                        <div>
+                            <a class="btn btn-primary float-left op2" href="/addNewCategory" name="addNewCategory">Dodaj nową kategorie</a>
+                        </div>
+<!--                    </form>-->
+
+                </div>
+
+<!--                <div class="col-sm-6 form-group">-->
+<!--                </div>-->
+
                 <div class="col-sm-6 form-group">
                     <label>Autorzy</label>
+                    <div th:each="author,authorStat : *{authors}">
+                        <p th:text="|Autor ${authorStat.index + 1}|"></p>
+                        <input oninvalid="setCustomValidity('Wprowadzono niedozwolone znaki')" oninput="setCustomValidity('')" pattern="[^0-9@!#$%^&*()_,<.>/?=+\\{};:|\[\]]*" th:errorclass="'Bdc(red)'" type="text" th:field="*{authors[__${authorStat.index}__].name}"/>
+                    </div>
                     <div>
                         <button class="btn btn-primary float-left op" type="submit" name="addAuthor">+</button>
                     </div>
                     <div th:if="${book.authors.size} != 0">
                         <button class="btn btn-primary float-left op1" type="submit" name="deleteAuthor">-</button>
-                    </div>
-                </div>
-                <div class="col-sm-6"></div>
-                <div class="col-sm-6 form-group">
-                    <div th:each="author,authorStat : *{authors}">
-                        <p th:text="|Autor ${authorStat.index + 1}|"></p>
-                        <input oninvalid="setCustomValidity('Wprowadzono niedozwolone znaki')" oninput="setCustomValidity('')" pattern="[^0-9@!#$%^&*()_,<.>/?=+\\{};:|\[\]]*" th:errorclass="'Bdc(red)'" type="text" th:field="*{authors[__${authorStat.index}__].name}"/>
                     </div>
                 </div>
                 <div class="col-sm-6 form-group">
@@ -145,7 +160,7 @@
                     </label>
                 </div>
                 <div class="col-sm-12 form-group mb-0">
-                    <button class="btn btn-primary float-right" type="submit">Dodaj</button>
+                    <button class="btn btn-primary float-right" type="submit" name="add">Dodaj</button>
                 </div>
             </div>
         </form>

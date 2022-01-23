@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Książka</title>
+    <!--    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />-->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" th:href="@{../../static/Rich-Text-Editor-jQuery-RichText/src/richtext.min.css}">
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://codepen.io/skjha5993/pen/bXqWpR.css">
+    <link rel="stylesheet" type="text/css" th:href="@{../../static/css.css}">
+    <script th:src="@{../../static/Rich-Text-Editor-jQuery-RichText/src/jquery.richtext.min.js}"></script>
+</head>
+<body>
+<header class="header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="nav-menu navbar-nav mr-auto">
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/register" data-item="Rejestracja">Rejestracja</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="!isAuthenticated()">
+                <a class="nav-item" href="/login" data-item="Zaloguj się">Zaloguj się</a>
+            </li>
+            <li  class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/logout" data-item="Wyloguj się">Wyloguj się</a>
+            </li>
+            <li class="nav-li nav-link" >
+                <a class="nav-item" href="/booksList" data-item="Lista książek">Lista książek</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/addBook" data-item="Dodaj książkę">Dodaj Książkę</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_USER')">
+                <a class="nav-item" href="/profile" data-item="Twój profil">Twój profil</a>
+            </li>
+            <li class="nav-li nav-link" sec:authorize="hasAuthority('ROLE_MOD') and !hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item" href="/adminPanel/commentsList">Komentarze</a>
+            </li>
+            <li class="nav-li nav-link dropdown" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                <a class="nav-item dropdown-toggle" role="button" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Panel admina
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="/adminPanel/usersList">Użytkownicy</a>
+                    <a class="dropdown-item" href="/adminPanel/commentsList" >Komentarze</a>
+                </div>
+            </li>
+        </ul>
+        <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+    </nav>
+</header>
+<article>
+    <div class="container">
+        <div class="row jumbotron">
+            <div class="col">
+                <div th:each="comment : *{comments}">
+                    <div class="media" th:unless="${comment.accepted}">
+                        <div class="media-body">
+                            <a class="media-heading" th:href="@{/profile/{id}(id=${comment.user.id})}" th:text="${comment.user.firstName}"></a>
+                            <p th:utext="${comment.text}"></p>
+                            <ul class="list-unstyled list-inline media-detail pull-left">
+                                <li th:text="${#temporals.format(comment.date, 'dd-MM-yyyy HH:mm')}"><i class="fa fa-calendar"></i></li>
+                                <!--                            <li><i class="fa fa-thumbs-up"></i>13</li>-->
+                            </ul>
+                            <div class="row">
+                                <div class="float-left">
+                                    <form th:unless="${comment.accepted}" th:action="@{/acceptComment/{id}(id=${comment.id})}" method="post" th:object="${comment}">
+                                        <button class="btn btn-primary" type="submit">Akceptuj</button>
+                                    </form>
+                                </div>
+                                <div class="float-left">
+                                    <form th:unless="${comment.accepted}" th:action="@{/deleteComment/{id}(id=${comment.id})}" method="post" th:object="${comment}">
+                                        <button class="btn btn-primary right" type="submit">Usuń</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+<script>
+    const hamburger = document.querySelector(".hamburger");
+    const navMenu = document.querySelector(".nav-menu");
+
+    hamburger.addEventListener("click", mobileMenu);
+
+    function mobileMenu() {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+    }
+    const navLink = document.querySelectorAll(".nav-link");
+
+    navLink.forEach(n => n.addEventListener("click", closeMenu));
+    navLink.item(navLink.length - 1).removeEventListener("click", closeMenu);
+    function closeMenu() {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+    }
+</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>

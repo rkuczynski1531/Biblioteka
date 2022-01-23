@@ -1,5 +1,8 @@
 package projekt.biblioteka.models;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.NumberFormat;
 import projekt.biblioteka.services.UsersBooksService;
 
@@ -11,6 +14,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -63,97 +69,6 @@ public class User {
     @ManyToMany(mappedBy = "peopleInQueue")
     private List<Book> queueForBooks = new ArrayList<>();
 
-    public User() {
-    }
-
-    public List<Book> getQueueForBooks() {
-        return queueForBooks;
-    }
-
-    public void setQueueForBooks(List<Book> queueForBooks) {
-        this.queueForBooks = queueForBooks;
-    }
-
-    public Set<Message> getMessagesReceived() {
-        return messagesReceived;
-    }
-
-    public void setMessagesReceived(Set<Message> messagesReceived) {
-        this.messagesReceived = messagesReceived;
-    }
-
-    public Set<Message> getMessagesSent() {
-        return messagesSent;
-    }
-
-    public void setMessagesSent(Set<Message> messagesSent) {
-        this.messagesSent = messagesSent;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
     public void addRole(Role role) {
         this.roles.add(role);
     }
@@ -161,25 +76,9 @@ public class User {
         this.roles.remove(role);
     }
 
-    public Set<UsersBooks> getBooks() {
-        return books;
-    }
-
-    public void setBooks(Set<UsersBooks> books) {
-        this.books = books;
-    }
-
     public void addBook(UsersBooks usersBooks) {
 //        for(UsersBooks usersBook : usersBooks) usersBook.setUser(this);
 //        this.books = Stream.of(usersBooks).collect(Collectors.toSet());
-    }
-
-    public Set<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(Set<Comment> comments) {
-        this.comments = comments;
     }
 
     public void addComment(Comment comment){

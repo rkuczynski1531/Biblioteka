@@ -1,17 +1,22 @@
 package projekt.biblioteka.models;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Embeddable
 public class UsersBooksId implements Serializable {
     private static final long serialVersionUID = 1L;
     private int bookId;
     private int userId;
 
-    public UsersBooksId() {
-    }
 
     public UsersBooksId(int bookId, int userId) {
         super();
@@ -19,21 +24,6 @@ public class UsersBooksId implements Serializable {
         this.userId = userId;
     }
 
-    public int getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
 
     @Override
     public boolean equals(Object o) {

@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org">
-<!--      prefix="th: http://www.thymeleaf.org/ sec: http://www.thymeleaf.org/" xmlns:sec="http://www.w3.org/1999/xhtml">-->
-<!--      xmlns:sec="http://www.w3.org/1999/xhtml">-->
-<!--&gt;-->
+      xmlns:sec="http://www.thymeleaf.org"
+>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista książek</title>
+    <title>Biblioteka</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" th:href="@{../../static/Rich-Text-Editor-jQuery-RichText/src/richtext.min.css}">
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://codepen.io/skjha5993/pen/bXqWpR.css">
-    <link rel="stylesheet" th:href="@{../../static/css.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{../../static/css.css}">
     <script th:src="@{../../static/Rich-Text-Editor-jQuery-RichText/src/jquery.richtext.min.js}"></script>
+
 </head>
 <body>
 <header class="header">
@@ -58,127 +57,68 @@
         </div>
     </nav>
 </header>
-<!--<article>-->
-<div class="search">
-    <form th:action="@{/page/1}" method="get">
-        <input type="hidden" name="sortField" th:value="${sortField}">
-        <input type="hidden" name="sortDir" th:value="${sortDir}">
-        <input type="hidden" name="onTheList" th:value="${onTheList}">
-        <input id="txtSearch" type="text" name="keyword" th:value="${keyword}">
-        <button class="btn btn-primary" type="submit">Szukaj</button>
-    </form>
-    <form sec:authorize="hasAuthority('ROLE_ADMIN')" th:if="${onTheList == true}" th:action="@{/notListedBooks}" method="get">
-        <button class="btn btn-primary" type="submit">Książki nie na liście</button>
-    </form>
-    <form sec:authorize="hasAuthority('ROLE_ADMIN')" th:if="${onTheList == false}" th:action="@{/booksList}" method="get">
-        <button class="btn btn-primary" type="submit">Książki na liście</button>
-    </form>
-    <!--        <a th:class="booksList" sec:authorize="hasAuthority('ROLE_ADMIN')" th:if="${onTheList == true}" th:href="@{/notListedBooks}" class="btn btn-primary">Książki nie na liście</a>-->
-    <!--        <a th:class="booksList" sec:authorize="hasAuthority('ROLE_ADMIN')" th:if="${onTheList == false}" th:href="@{/booksList}" class="btn btn-primary">Książki na liście</a>-->
-    <div class="table-responsive">
-        <table class="table">
-            <tr>
-                <th>
-                    <a th:href="@{'/page/' + ${currentPage} + '?sortField=title&sortDir=' + ${sortField == 'title' ? reverseSortDir : 'asc'} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">
-                        Tytuł
-                    </a>
-                </th>
-
-                <th>Zdjęcie</th>
-                <th>
-                    Autorzy
-                </th>
-                <th>
-                    <a th:href="@{'/page/' + ${currentPage} + '?sortField=category&sortDir=' + ${sortField == 'category' ? reverseSortDir : 'asc'} + ${keyword != null ? '&keyword=' + keyword : ''}  + '&onTheList=' + ${onTheList}}">
-                        Kategoria
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{'/page/' + ${currentPage} + '?sortField=numOfPages&sortDir=' + ${sortField == 'numOfPages' ? reverseSortDir : 'asc'} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">
-                        Liczba stron
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{'/page/' + ${currentPage} + '?sortField=rating&sortDir=' + ${sortField == 'rating' ? reverseSortDir : 'desc'} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">
-                        Ocena
-                    </a>
-                </th>
-                <th>
-                    <a th:href="@{'/page/' + ${currentPage} + '?sortField=numOfVotes&sortDir=' + ${sortField == 'numOfVotes' ? reverseSortDir : 'desc'} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">
-                        Liczba głosów
-                    </a>
-                </th>
-                <th sec:authorize="hasAuthority('ROLE_ADMIN')">Usuń</th>
-                <th sec:authorize="hasAuthority('ROLE_ADMIN')">Edytuj</th>
-                <th sec:authorize="hasAuthority('ROLE_ADMIN')">Lista osób</th>
-            </tr>
-            <tr th:each="book : ${books}">
-                <!--                    <div>-->
-                <td>
-                    <a th:href="@{'/book/{id}'(id=${book.id})}" th:utext="${book.title}"></a>
-                </td>
-                <td>
-                    <a th:href="@{'/book/{id}'(id=${book.id})}">
-                        <img class="image" th:src="@{${book.getPhotosImagePath()}}" th:alt="${book.title}"/>
-                    </a>
-                </td>
-                <td th:if="${book.authors.size < 1}">-</td>
-                <td th:if="${book.authors.size > 0}" >
-                    <span th:each="author:${book.authors}"> [[${author.name}]] <br/></span>
-                </td>
-
-                <td th:text="${book.category}"></td>
-                <td th:text="${book.numOfPages}"></td>
-                <td th:text="${book.rating}"></td>
-                <td th:text="${book.numOfVotes}"></td>
-                <td th:if="${onTheList == true}" sec:authorize="hasAuthority('ROLE_ADMIN')">
-                    <form th:action="@{/deleteBook/{id}(id=${book.id})}" th:object="${book}" method="post">
-                        <input type="submit" value="Usuń"/>
-                    </form>
-                </td>
-                <td th:unless="${onTheList == true}" sec:authorize="hasAuthority('ROLE_ADMIN')">
-                    <form th:action="@{/addToList/{id}(id=${book.id})}" th:object="${book}" method="post">
-                        <input type="submit" value="Dodaj do listy"/>
-                    </form>
-                </td>
-                <td sec:authorize="hasAuthority('ROLE_ADMIN')">
-                    <form th:action="@{/updateBook/{id}(id=${book.id})}" th:object="${book}" method="get">
-                        <input type="submit" value="Edytuj"/>
-                    </form>
-                </td>
-                <td sec:authorize="hasAuthority('ROLE_ADMIN')">
-                    <form th:action="@{/bookUsers/{id}(id=${book.id})}" th:object="${book}" method="get">
-                        <input type="submit" value="Lista osób"/>
-                    </form>
-                </td>
-                <!--                    </div>-->
-            </tr>
-        </table>
-    </div>
-
-    <div th:if="${totalPages > 1}">
-        <div class="row col-sm-12">
-            <div class="pages">
-                <a th:if="${currentPage > 1}" th:href="@{'/page/1?sortField=' + ${sortField} +'&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">Pierwsza</a>
-                <span th:unless="${currentPage > 1}">Pierwsza</span>
+<div class="container">
+    <div class="row jumbotron">
+        <div class="col">
+            <form th:action="@{/usersList/page/1}" method="get">
+                <input id="txtSearch" type="text" name="keyword" th:value="${keyword}">
+                <button class="btn btn-primary" type="submit">Szukaj</button>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Imię</th>
+                        <th>Nazwisko</th>
+                        <th>Email</th>
+                        <th colspan="3">Role</th>
+                    </tr>
+                    <tr th:each="user : ${users}">
+                        <td>
+                            <a th:href="@{'user/{id}'(id=${user.id})}" th:utext="${user.firstName}"></a>
+                        </td>
+                        <td>
+                            <a th:href="@{'user/{id}'(id=${user.id})}" th:utext="${user.lastName}"></a>
+                        </td>
+                        <td th:utext="${user.email}"></td>
+                        <td th:each="role : ${roles}">
+                            <p th:if="${role.name} == 'ROLE_USER'">Użytkownik</p>
+                            <p th:if="${role.name} == 'ROLE_ADMIN'">Admin</p>
+                            <p th:if="${role.name} == 'ROLE_MOD'">Moderator</p>
+                            <form th:method="post" th:action="@{/deleteRole/{userId}/{roleId}(userId=${user.id}, roleId=${role.id})}" th:if="${user.roles.contains(role)} == true">
+                                <button class="btn btn-primary">-</button>
+                            </form>
+                            <form th:method="post" th:action="@{/addRole/{userId}/{roleId}(userId=${user.id}, roleId=${role.id})}"  th:unless="${user.roles.contains(role)} == true">
+                                <button class="btn btn-primary">+</button>
+                            </form>
+                        </td>
+                    </tr>
+                </table>
             </div>
-            <div class="pages">
-                <a th:if="${currentPage > 1}" th:href="@{'/page/' + ${currentPage - 1} + '?sortField=' + ${sortField} +'&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">Poprzednia</a>
-                <span th:unless="${currentPage > 1}">Poprzednia</span>
-            </div>
-            <div class="pages">
+            <div th:if="${totalPages > 1}">
+                <div class="row col-sm-12">
+                    <div class="pages">
+                        <a th:if="${currentPage > 1}" th:href="@{'/usersList/page/1' + ${keyword != null ? '&keyword=' + keyword : ''}}">Pierwsza</a>
+                        <span th:unless="${currentPage > 1}">Pierwsza</span>
+                    </div>
+                    <div class="pages">
+                        <a th:if="${currentPage > 1}" th:href="@{'/usersList/page/' + ${currentPage - 1} + '?' + ${keyword != null ? '&keyword=' + keyword : ''}}">Poprzednia</a>
+                        <span th:unless="${currentPage > 1}">Poprzednia</span>
+                    </div>
+                    <div class="pages">
                     <span th:each="i: ${#numbers.sequence(1, totalPages)}">
-                        <a th:if="${currentPage != i}" th:href="@{'/page/' + ${i} + '?sortField=' + ${sortField} +'&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">[[${i}]]</a>
+                        <a th:if="${currentPage != i}" th:href="@{'/usersList/page/' + ${i} + '?'  + ${keyword != null ? '&keyword=' + keyword : ''}}">[[${i}]]</a>
                         <span th:unless="${currentPage != i}">[[${i}]]</span>
                     </span>
-            </div>
-            <div class="pages">
-                <a th:if="${currentPage < totalPages}" th:href="@{'/page/' + ${currentPage + 1} + '?sortField=' + ${sortField} +'&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">Dalej</a>
-                <span th:unless="${currentPage < totalPages}">Dalej</span>
-            </div>
-            <div class="pages">
-                <a th:if="${currentPage < totalPages}" th:href="@{'/page/' + ${totalPages} + '?sortField=' + ${sortField} +'&sortDir=' + ${sortDir} + ${keyword != null ? '&keyword=' + keyword : ''} + '&onTheList=' + ${onTheList}}">Ostatnia</a>
-                <span th:unless="${currentPage < totalPages}">Ostatnia</span>
+                    </div>
+                    <div class="pages">
+                        <a th:if="${currentPage < totalPages}" th:href="@{'/usersList/page/' + ${currentPage + 1} + '?'  + ${keyword != null ? '&keyword=' + keyword : ''}}">Dalej</a>
+                        <span th:unless="${currentPage < totalPages}">Dalej</span>
+                    </div>
+                    <div class="pages">
+                        <a th:if="${currentPage < totalPages}" th:href="@{'/usersList/page/' + ${totalPages} + '?'  + ${keyword != null ? '&keyword=' + keyword : ''}}">Ostatnia</a>
+                        <span th:unless="${currentPage < totalPages}">Ostatnia</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -202,8 +142,5 @@
         navMenu.classList.remove("active");
     }
 </script>
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>

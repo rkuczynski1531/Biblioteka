@@ -4,6 +4,7 @@ package projekt.biblioteka.controllers;
 //import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.access.annotation.Secured;
@@ -20,10 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 //import projekt.biblioteka.config.CustomMultipartFile;
 import projekt.biblioteka.models.*;
 import projekt.biblioteka.repositories.ImageRepository;
-import projekt.biblioteka.services.BookService;
-import projekt.biblioteka.services.CommentService;
-import projekt.biblioteka.services.UserService;
-import projekt.biblioteka.services.UsersBooksService;
+import projekt.biblioteka.services.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -33,9 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 @Controller
 //@RequestMapping("/books")
@@ -45,21 +41,22 @@ public class BookController {
     private final CommentService commentService;
     private final ImageRepository imageRepository;
     private final UsersBooksService usersBooksService;
+    private final CategoryService categoryService;
 
-    public BookController(BookService bookService, UserService userService, CommentService commentService, ImageRepository imageRepository, UsersBooksService usersBooksService) {
+    public BookController(BookService bookService, UserService userService, CommentService commentService, ImageRepository imageRepository, UsersBooksService usersBooksService, CategoryService categoryService) {
         this.bookService = bookService;
         this.userService = userService;
         this.commentService = commentService;
         this.imageRepository = imageRepository;
         this.usersBooksService = usersBooksService;
+        this.categoryService = categoryService;
     }
-
 
     @GetMapping({"/booksList", "/"})
     public String showBooks(Model model){
 
         String keyword = null;
-        return findPaginated(1, model, "id", "asc", keyword, true);
+        return findPaginated(1, model, "id", "asc", keyword, true, null);
 //        return "books/booksList";
     }
 
@@ -68,7 +65,7 @@ public class BookController {
     @GetMapping("/notListedBooks")
     public String getNotListedBooks(Model model){
         String keyword = null;
-        return findPaginated(1, model, "id", "asc", keyword, false);
+        return findPaginated(1, model, "id", "asc", keyword, false, null);
     }
 
     @GetMapping("/page/{pageNo}")
@@ -77,11 +74,22 @@ public class BookController {
                                 @Param("sortField") String sortField,
                                 @Param("sortDir") String sortDir,
                                 @Param("keyword") String keyword,
-                                @Param("onTheList") boolean onTheList){
+                                @Param("onTheList") boolean onTheList,
+                                @Param("category") String category){
         int pageSize = 2;
-
-        Page<Book> page = bookService.findPaginated(pageNo, pageSize, sortField, sortDir, keyword, onTheList);
+        Category cat = categoryService.getCategoryByName(category);
+        List<Category> cats = new ArrayList<>();
+        if (cat != null && !cat.getChildCategories().isEmpty()) {
+            cats = cat.getChildCategories();
+        }
+        else if (cat != null)
+            cats.add(cat);
+        if (cats.size() > 0 )
+            System.out.println(cats.get(0).getName());
+        Page<Book> page = bookService.findPaginated(pageNo, pageSize, sortField, sortDir, keyword, onTheList, cats);
         List<Book> listBooks = page.getContent();
+        model.addAttribute("cats", categoryService.findAllWithoutParent());
+        model.addAttribute("category", category);
         model.addAttribute("image", new Book());
         model.addAttribute("currentPage", pageNo);
         model.addAttribute("totalPages", page.getTotalPages());
@@ -110,28 +118,61 @@ public class BookController {
     @CrossOrigin
     @GetMapping("/addBook")
     public String addBookForm(Model model){
-        model.addAttribute("book", new Book());
+        Book book = new Book();
+        book.getCategories().add(categoryService.findAllWithoutParent().get(0));
+        book.getAuthors().add(new Author());
+//        book.getCategories().add(new Category());
+        model.addAttribute("book", book);
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        System.out.println("asdas" + categoryService.findAllWithoutParent());
+//        for (int i = 0; i < )
+//        System.out.println(categoryService.getCategoryById(2L).getChildCategories().get(0).getName());
         return "books/addBook";
     }
 
-//    @CrossOrigin
-    @PostMapping("/addBook")
-//    @InitBinder
+
+//    @PostMapping(value = "/addBook", params = "addCategory")
+//    public String addCategory(@ModelAttribute("book") Book current, Model model, @RequestParam("im") MultipartFile multipartFile) throws IOException {
+//        System.out.println(current.getCategories().size());
+//        current.getCategories().add(new Category());
+//        model.addAttribute("categoriess", categoryService.findAllWithoutParent());
+//        System.out.println(current.getCategories().size());
+//        return "books/addBook";
+//    }
+
+    @PostMapping(value = "/addBook", params = {"cat[]", "!addCategory", "!deleteCategory", "!addAuthor", "!deleteAuthor", "!add"})
+    public String cat(@ModelAttribute("book") Book current, Model model, @RequestParam("im") MultipartFile multipartFile, @RequestParam("cat[]") String[] catName){
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        System.out.println(catName.length);
+        System.out.println("sdfds");
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
+        return "books/addBook";
+    }
+
+
+    @PostMapping(value = "/addBook", params = {"add"})
     public String addBook(@ModelAttribute("book") @Valid Book toSave, BindingResult bindingResult,
                           @RequestParam("im") MultipartFile multipartFile,
-                          RedirectAttributes redirectAttributes) throws IOException {
-//        System.out.println("sadasd22");
-//        DataBinder dataBinder = new DataBinder(multipartFile);
-//        dataBinder.setDisallowedFields("image");
-//        toSave.setImage(multipartFile.getBytes());
+                          RedirectAttributes redirectAttributes, @RequestParam("cat[]") String[] catName, @RequestParam(value = "subCat[]", defaultValue = "null") String[] subCatName) throws IOException {
         if (bindingResult.hasFieldErrors())
             return "books/addBook";
+
         String fileName = "";
         if (multipartFile.isEmpty()){
             Path path = Paths.get(System.getProperty("user.dir") + "/book-photos/default.jpg");
             System.out.println(path);
-//            File defaultPhoto = new File(System.getProperty("user.dir") + "/book-photos/default.jpg");
-//            FileInputStream input = new FileInputStream(defaultPhoto);
             byte[] content = null;
             try {
                 content = Files.readAllBytes(path);
@@ -148,48 +189,100 @@ public class BookController {
             System.out.println(multipartFile.getName());
             System.out.println(multipartFile.getOriginalFilename());
             System.out.println(multipartFile.getContentType());
-//            System.out.println(multipartFile.ge);
             fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
             System.out.println(fileName);
             Random rand = new Random();
             fileName = toSave.getId() + "" + rand.nextInt(999999) + fileName;
             toSave.setImage(fileName);
         }
-//        String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-//        System.out.println(fileName);
-//        Random rand = new Random();
-//        fileName = toSave.getId() + "" + rand.nextInt(999999) + fileName;
-//        toSave.setImage(fileName);
+        toSave.getCategories().clear();
+        int licznik = 0;
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            toSave.getCategories().add(catToSave);
+            if (!catToSave.getChildCategories().isEmpty()) {
+                catToSave = categoryService.getCategoryByName(subCatName[licznik]);
+                licznik++;
+            }
+            toSave.getCategories().add(catToSave);
+        }
+//        toSave.getCategories().remove(0);
+        LinkedHashSet<Category> hashSet = new LinkedHashSet<>(toSave.getCategories());
+        toSave.setCategories(new ArrayList<>(hashSet));
         bookService.saveBook(toSave);
         String uploadDir = "book-photos";
 
         bookService.saveImage(uploadDir, fileName, multipartFile);
-//        Image image = new Image();
-//        image.setName(multipartFile.getName());
-//        image.setContent(multipartFile.getBytes());
-//        toSave.setImage(image);
-//        imageRepository.save(image);
-//        toSave.setImage(multipartFile.getBytes());
         bookService.saveBook(toSave);
-
-//        bookService.saveImage(multipartFile, fileName, toSave.getId());
 
         return "redirect:/booksList";
     }
 
+    @PostMapping(value = "/addBook", params = "addCategory")
+    public String addCategory(@ModelAttribute("book") Book current, Model model, @RequestParam("im") MultipartFile multipartFile, @RequestParam("cat[]") String[] catName) throws IOException {
+        System.out.println(current.getCategories().size());
+//        current.getCategories().add(new Category());
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
+        current.getCategories().add(categoryService.findAllWithoutParent().get(0));
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        System.out.println(current.getCategories().size());
+        return "books/addBook";
+    }
+
+    @PostMapping(value = "/addBook", params = "deleteCategory")
+    public String deleteCategory(@ModelAttribute("book") Book current, @RequestParam("im") MultipartFile multipartFile, Model model, @RequestParam("cat[]") String[] catName) throws IOException {
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
+        if (current.getCategories().size() > 0)
+            current.getCategories().remove(current.getCategories().size() - 1);
+        return "books/addBook";
+    }
+
+
+
 //    @CrossOrigin
     @PostMapping(value = "/addBook", params = "addAuthor")
-    public String addAuthor(@ModelAttribute("book") Book current, @RequestParam("im") MultipartFile multipartFile) throws IOException {
-        System.out.println("sadasd");
+    public String addAuthor(@ModelAttribute("book") Book current, @RequestParam("im") MultipartFile multipartFile, Model model, @RequestParam("cat[]") String[] catName) throws IOException {
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
 //        current.setImage(multipartFile.getBytes());
         current.getAuthors().add(new Author());
         System.out.println("sadasd");
         return "books/addBook";
     }
 
+
     @PostMapping(value = "/addBook", params = "deleteAuthor")
-    public String deleteAuthor(@ModelAttribute("book") Book current, @RequestParam("im") MultipartFile multipartFile) throws IOException {
-        System.out.println("sadasd");
+    public String deleteAuthor(@ModelAttribute("book") Book current, @RequestParam("im") MultipartFile multipartFile, Model model, @RequestParam("cat[]") String[] catName) throws IOException {
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
 //        current.setImage(multipartFile.getBytes());
         if (current.getAuthors().size() > 0)
             current.getAuthors().remove(current.getAuthors().size() - 1);
@@ -230,57 +323,129 @@ public class BookController {
             copy.getAuthors().add(new Author());
         else if (copy.getAuthors().size() > original.getAuthors().size())
             copy.getAuthors().remove(copy.getAuthors().size() - 1);
-        copy.setCategory(original.getCategory());
+        if (copy.getCategories().size() < original.getCategories().size())
+            copy.getCategories().add(categoryService.findAllWithoutParent().get(0));
+        else if (copy.getCategories().size() > original.getCategories().size())
+            copy.getCategories().remove(copy.getCategories().size() - 1);
         copy.setDescription(original.getDescription());
         copy.setTitle(original.getTitle());
         copy.setNumOfPages(original.getNumOfPages());
         copy.setId(-original.getId());
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
         model.addAttribute("bookToUpdate", copy);
 //        model.addAttribute("oldImage", bookService.getBook(id).getImage());
 //        model.addAttribute("imm", file);
         return "books/updateBook";
     }
 
-    @PostMapping(value = "/updateBook/{id}", params = "addAuthor")
-    public String addAuthorUpdate(@PathVariable int id, @ModelAttribute("bookToUpdate") Book current, @RequestParam("im") MultipartFile multipartFile) throws IOException {
-        System.out.println("sadasd");
-//        current.setImage(multipartFile.getBytes());
-        current.getAuthors().add(new Author());
-//        if (current.getId() < 0) {
-        Book toEdit = bookService.getBook(-id);
-//        }
-        toEdit.getAuthors().add(new Author());
+    @PostMapping(value = "/updateBook/{id}", params = {"cat[]", "!addCategory", "!deleteCategory", "!addAuthor", "!deleteAuthor", "!add"})
+    public String cat(@PathVariable int id, @ModelAttribute("bookToUpdate") Book current, Model model, @RequestParam("im") MultipartFile multipartFile, @RequestParam("cat[]") String[] catName){
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        System.out.println(catName.length);
+        System.out.println("sdfds");
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
+        return "books/updateBook";
+    }
 
-//        id = toEdit.getId();
-        System.out.println("toedit "+ toEdit.getId());
-        System.out.println("sizeedit " + toEdit.getAuthors().size());
-        System.out.println(id);
-        id = -id;
-//        current.setId(-id);
-//        id = -id;
-//        System.out.println("id przed " + id);
-//        bookService.saveBook(toEdit);
+    @PostMapping(value = "/updateBook/{id}", params = "addAuthor")
+    public String addAuthorUpdate(@PathVariable int id, @ModelAttribute("bookToUpdate") Book current, Model model, @RequestParam("im") MultipartFile multipartFile, @RequestParam("cat[]") String[] catName) throws IOException {
+        current.getAuthors().add(new Author());
+        Book toEdit = bookService.getBook(-id);
+        toEdit.getAuthors().add(new Author());
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
+
         return "books/updateBook";
     }
 
     @PostMapping(value = "/updateBook/{id}", params = "deleteAuthor")
-    public String deleteAuthorUpdate(@PathVariable int id, @ModelAttribute("bookToUpdate") Book current, @RequestParam("im") MultipartFile multipartFile) throws IOException {
+    public String deleteAuthorUpdate(@PathVariable int id, @ModelAttribute("bookToUpdate") Book current, Model model, @RequestParam("im") MultipartFile multipartFile, @RequestParam("cat[]") String[] catName) throws IOException {
         System.out.println("sadasd");
 //        current.setImage(multipartFile.getBytes());
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
         Book toEdit = bookService.getBook(-id);
         if (current.getAuthors().size() > 0)
             current.getAuthors().remove(current.getAuthors().size() - 1);
         System.out.println("sadasd");
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
         id = -id;
 //        current.setId(id);
 //        bookService.saveBook(current);
         return "books/updateBook";
     }
 
+    @PostMapping(value = "/updateBook/{id}", params = "addCategory")
+    public String addCategoryUpdate(@PathVariable int id, @ModelAttribute("bookToUpdate") Book current, Model model, @RequestParam("im") MultipartFile multipartFile, @RequestParam("cat[]") String[] catName) throws IOException {
+        current.getCategories().add(categoryService.findAllWithoutParent().get(0));
+        id = -id;
+        System.out.println(current.getCategories().size());
+//        current.getCategories().add(new Category());
+        current.getCategories().clear();
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
+        current.getCategories().add(categoryService.findAllWithoutParent().get(0));
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        System.out.println(current.getCategories().size());
+        return "books/updateBook";
+    }
+
+    @PostMapping(value = "/updateBook/{id}", params = "deleteCategory")
+    public String deleteCategoryUpdate(@PathVariable int id, @ModelAttribute("bookToUpdate") Book current, @RequestParam("im") MultipartFile multipartFile, Model model, @RequestParam("cat[]") String[] catName) throws IOException {
+        current.getCategories().clear();
+        current.getCategories().add(categoryService.findAllWithoutParent().get(0));
+        List<Category> categs = categoryService.findAllWithoutParent();
+        for (Category cat : categs){
+            cat.getChildCategories().sort(Comparator.comparing(Category::getName));
+        }
+        model.addAttribute("categoriess", categs);
+        id=-id;
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            current.getCategories().add(catToSave);
+        }
+        if (current.getCategories().size() > 0)
+            current.getCategories().remove(current.getCategories().size() - 1);
+        return "books/updateBook";
+    }
+
     @Transactional
-    @PostMapping(value = "/updateBook/{id}")
+    @PostMapping(value = "/updateBook/{id}", params = "add")
     public String updateBook(@ModelAttribute("bookToUpdate") @Valid Book toSave, BindingResult bindingResult,
-                              @PathVariable int id, @RequestParam("im") MultipartFile multipartFile) throws IOException {
+                              @PathVariable int id, @RequestParam("im") MultipartFile multipartFile, @RequestParam("cat[]") String[] catName, @RequestParam(value = "subCat[]", defaultValue = "null") String[] subCatName) throws IOException {
         if (bindingResult.hasErrors()){
             List<FieldError> errors = bindingResult.getFieldErrors();
             for (FieldError error : errors ) {
@@ -307,11 +472,26 @@ public class BookController {
         }
         else
             toSave.setImage(bookService.getBook(-id).getImage());
+        toSave.getCategories().clear();
+        int licznik = 0;
+        for (String categoryName : catName){
+            Category catToSave = categoryService.getCategoryByName(categoryName);
+            toSave.getCategories().add(catToSave);
+            if (!catToSave.getChildCategories().isEmpty()) {
+                catToSave = categoryService.getCategoryByName(subCatName[licznik]);
+                licznik++;
+            }
+            toSave.getCategories().add(catToSave);
+        }
+//        toSave.getCategories().remove(0);
+        LinkedHashSet<Category> hashSet = new LinkedHashSet<>(toSave.getCategories());
+        toSave.setCategories(new ArrayList<>(hashSet));
+        bookService.saveBook(toSave);
         if (bindingResult.hasFieldErrors())
             return "redirect:/updateBook/{id}";
         Book oldBook = bookService.getBook(-id);
         oldBook.setImage(toSave.getImage());
-        oldBook.setCategory(toSave.getCategory());
+        oldBook.setCategories(toSave.getCategories());
         oldBook.setDescription(toSave.getDescription());
         oldBook.setAuthors(toSave.getAuthors());
         oldBook.setTitle(toSave.getTitle());

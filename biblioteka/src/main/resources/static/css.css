@@ -11,6 +11,17 @@ table {
 }
 .op1{
     width: 40px;
+    margin-top: 10px;
+    margin-left: 1rem;
+}
+.a{
+    margin-top: 10px;
+}
+.ds{
+    display: block;
+}
+.op2{
+    margin-top: 10px;
     margin-left: 1rem;
 }
 .formik{
@@ -19,6 +30,7 @@ table {
 
 .op{
     width: 40px;
+    margin-top: 10px;
 }
 
 a {
@@ -248,9 +260,9 @@ label {
     width: 150px;
     height: auto;
 }
-.search {
-    margin: 9vh 9vw;
-}
+/*.search {*/
+/*    margin: 9vh 9vw;*/
+/*}*/
 
 
 .jumbotron p {
@@ -260,6 +272,7 @@ label {
 }
 
 .pages {
+    float: left;
     margin-left: 5px;
 }
 
