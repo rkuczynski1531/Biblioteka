@@ -102,7 +102,7 @@
                                     <!--                                <input type="submit" value="Wypożycz"/>-->
                                     <button class="btn btn-primary bookDetailsBorrow " type="submit">Wypożycz</button>
                                 </form>
-                                <form  th:if="${book.quantity == 0 }" th:action="@{/reserveBook/{id}(id=${book.id})}" th:object="${book}" method="post">
+                                <form sec:authorize="isAuthenticated()" th:if="${book.quantity == 0 }" th:action="@{/reserveBook/{id}(id=${book.id})}" th:object="${book}" method="post">
                                     <span class="pull-left reserveText" th:text="'Ludzi w kolejce: ' + ${book.getPeopleInQueue().size()}"></span>
 <!--                                    <div class="row">-->
                                         <button class="btn btn-primary reserve bookDetails" type="submit">Zarezerwuj</button>

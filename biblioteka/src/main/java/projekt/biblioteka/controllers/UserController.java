@@ -73,7 +73,7 @@ public class UserController {
         user.addRole(roleUser);
         userRepository.save(user);
         model.addAttribute("message", "Zarejestrowano się poprawnie");
-        return "books/booksList";
+        return "redirect:books/booksList";
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_USER", "ROLE_MOD"})
